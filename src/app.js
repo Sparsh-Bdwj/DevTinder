@@ -89,11 +89,28 @@ const app = express();
 // });
 
 // now there is a more better way then this
-app.post("/user/:adminId/setAlldata", adminAuth, (req, res) => {
-  res.send("All the data is set");
+// app.post("/user/:adminId/setAlldata", adminAuth, (req, res) => {
+//   res.send("All the data is set");
+// });
+// app.get("/user/:adminId/seeAlldata", adminAuth, (req, res) => {
+//   res.send("All the data can be seen");
+// });
+
+// now lets see that how are errors are handelled
+// best practice is to always write your code in the try catch block
+// and always handle the errors gracefully let see it
+// lets create a get user route and throw error into if
+app.get("/getUserInfo", (req, res) => {
+  throw new Error("Some error in the backend");
+  // this will expose our details to the user which is not appropriate
+  res.send("User data send");
 });
-app.get("/user/:adminId/seeAlldata", adminAuth, (req, res) => {
-  res.send("All the data can be seen");
+
+// so we will have a universal error handler middlerware for all routes
+// this is the wild card handelling always keep it in the end
+app.use("/", (err, req, res, next) => {
+  console.log(err);
+  res.status(500).send("some internal server error"); // it will the handle the above in line 104 without letting the user know
 });
 
 app.use("/api", (req, res) => {
