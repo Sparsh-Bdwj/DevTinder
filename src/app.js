@@ -19,8 +19,8 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.status(200).send("User created successfully ");
   } catch (error) {
-    console.log(error.message);
-    res.status(500).send("Some unaccepted error");
+    console.log(error);
+    res.status(404).send(`error message: ${error.message}`);
   }
 });
 
@@ -38,8 +38,8 @@ app.get("/user", async (req, res) => {
       res.status(200).send(user);
     }
   } catch (error) {
-    console.log(error.message);
-    res.status(404).send("error message ", error.message);
+    console.log(error);
+    res.status(404).send(`error message: ${error.message}`);
   }
 });
 // get a user feed from the db
@@ -52,8 +52,8 @@ app.get("/feed", async (req, res) => {
       res.status(200).send(users);
     }
   } catch (error) {
-    console.log(error.message);
-    res.status(404).send("error message: ", error.message);
+    console.log(error);
+    res.status(404).send(`error message: ${error.message}`);
   }
 });
 
@@ -68,25 +68,34 @@ app.delete("/user", async (req, res) => {
     await User.findByIdAndDelete(userId);
     res.status(200).send("user deleted successfully, user details ");
   } catch (error) {
-    console.log(error.message);
-    res.status(404).send("error message: ", error.message);
+    console.log(error);
+    res.status(404).send(`error message: ${error.message}`);
   }
 });
 
 // updating a existing user
 app.patch("/user", async (req, res) => {
-  const { userId, userLastName } = req.body;
+  const { userId, userLastName, gender, email } = req.body;
   try {
+    // this is a api level senitation
+    if (email) {
+      throw new Error("can't update email");
+    }
     if (!userId || !userLastName) {
       res.status(404).send("User Id or update feild is missing");
     }
-    await User.findByIdAndUpdate(userId, {
-      lastName: userLastName,
-    });
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        lastName: userLastName,
+        gender: gender,
+      },
+      { runValidators: true, returnDocument: "after" }, // runValidators inables to apply validate fn with patch, put request, and retrunDocument returns the doc before or after the operation
+    );
     res.status(200).send("User updated successfully");
   } catch (error) {
-    console.log(error.message);
-    res.status(404).send("error message: ", error.message);
+    console.log(error);
+    res.status(404).send(`error message: ${error.message}`);
   }
 });
 
