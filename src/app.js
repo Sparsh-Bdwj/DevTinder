@@ -1,10 +1,13 @@
 const express = require("express");
 const { connectDB } = require("./config/dbConnection.js");
 const User = require("./models/user.js");
+const { signupValidator } = require("./utils/validator.js");
+const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json()); // middleware to parse data to js object
 
 // add user data to data base
+// signup controler
 app.post("/signup", async (req, res) => {
   // const user = new User({
   //   firstName: "amit",
@@ -14,10 +17,43 @@ app.post("/signup", async (req, res) => {
   //   age: 21,
   //   gender: "Male",
   // });
-  const user = new User({ ...req.body });
+  // const user = new User({ ...req.body });
+  // till now we were not handling the requests in porper order let do so
   try {
+    // 1-> validate req.body
+    const userData = signupValidator(req);
+    // 2-> hash the password
+    const { password } = userData;
+    const hashPassword = await bcrypt.hash(password, 10);
+    // 3-> store it into the db
+    const user = new User({ ...userData, password: hashPassword });
+    if (!user) {
+      throw new Error();
+    }
     await user.save();
     res.status(200).send("User created successfully ");
+  } catch (error) {
+    console.log(error);
+    res.status(404).send(`error message: ${error.message}`);
+  }
+});
+// login controler
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      throw new Error("Input feild is empty");
+    }
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+    console.log(user);
+    const validUser = await bcrypt.compare(password, user.password);
+    if (!validUser) {
+      throw new Error("Invaid credentials");
+    }
+    res.status(200).send("login successfull");
   } catch (error) {
     console.log(error);
     res.status(404).send(`error message: ${error.message}`);
