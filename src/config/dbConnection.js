@@ -1,3 +1,4 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 
 // // now simply connect to the database
@@ -7,9 +8,7 @@ const mongoose = require("mongoose");
 // // now it will work but it this i ideal was no wrap this inside a async funcition to handle connection or error
 
 const connectDB = async () => {
-  await mongoose.connect(
-    "mongodb+srv://sparshbhardwaj321_db_user:eUrD5WLQXkXkXngG@mongocluster.lwdi3of.mongodb.net/devTinder",
-  );
+  await mongoose.connect(process.env.MONGO_URL);
 };
 
 // // now handle connection

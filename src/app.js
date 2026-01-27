@@ -1,10 +1,15 @@
+require("dotenv").config();
 const express = require("express");
 const { connectDB } = require("./config/dbConnection.js");
 const User = require("./models/user.js");
 const { signupValidator } = require("./utils/validator.js");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middleware/auth.js");
 const app = express();
 app.use(express.json()); // middleware to parse data to js object
+app.use(cookieParser());
 
 // add user data to data base
 // signup controler
@@ -48,12 +53,29 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid credentials");
     }
-    console.log(user);
     const validUser = await bcrypt.compare(password, user.password);
     if (!validUser) {
       throw new Error("Invaid credentials");
     }
+    // so basically when user signIn or login we have to create a json token for the user and pass it as a cookie
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "1d",
+    });
+    res.cookie("token", token);
     res.status(200).send("login successfull");
+  } catch (error) {
+    console.log(error);
+    res.status(404).send(`error message: ${error.message}`);
+  }
+});
+
+app.get("/profile", userAuth, (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new Error("User not found");
+    }
+    res.status(200).send(`User found -> ${user}`);
   } catch (error) {
     console.log(error);
     res.status(404).send(`error message: ${error.message}`);
