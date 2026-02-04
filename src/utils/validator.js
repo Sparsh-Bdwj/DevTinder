@@ -14,6 +14,15 @@ const signupValidator = (req) => {
   }
 };
 
+const updateFieldValidator = (fields) => {
+  const allowedfieldsToUpdate = ["firstName", "lastName", "age", "gender"];
+  const isAllowed = Object.keys(fields).every((key) =>
+    allowedfieldsToUpdate.includes(key),
+  );
+  return isAllowed;
+};
+
 module.exports = {
   signupValidator,
+  updateFieldValidator,
 };
