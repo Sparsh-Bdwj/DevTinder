@@ -14,3 +14,15 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## cors settings
+
+while connecting frontend with backend keep one thing in mind always use cors-> corss origin resourse sharing
+in the backend how to do let me show it to you:
+const cors = require("cors");
+app.use(cors({
+origin: "http://Localhost/3000" or the deployemt url,
+credientials: true,
+}))
+
+// and in the front end to always to send {withCredentials: true} // to access cookies
