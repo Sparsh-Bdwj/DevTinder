@@ -67,6 +67,12 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     if (!loggedInUserId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
+    // adding pagination
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    console.log(page, limit);
+    limit = limit > 50 ? 50 : limit;
+    const skip = (page - 1) * limit;
     // whey to achive find all the connections requests were loggedin use is invloved
     const connections = await ConnectionRequest.find({
       $or: [{ fromUserId: loggedInUserId }, { toUserId: loggedInUserId }],
@@ -78,8 +84,14 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     });
     // fetch user which are not in hiddenConnections
     const data = await User.find({
-      _id: { $nin: Array.from(hiddenConnections) },
-    }).select("firstName lastName age");
+      $and: [
+        { _id: { $nin: Array.from(hiddenConnections) } },
+        { _id: { $ne: loggedInUserId } },
+      ],
+    })
+      .select("firstName lastName age")
+      .skip(skip)
+      .limit(limit);
     res.json({ success: true, feed: data });
   } catch (error) {
     console.log(error);
